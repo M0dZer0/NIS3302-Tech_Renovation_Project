@@ -14,7 +14,7 @@
 <br/>[@vagueeee](https://github.com/vagueeee)
 <br/>[@SJTUzeroking](https://github.com/SJTUzeroking)
 ## Special Thanks
-
+[Linux的SOCKET编程详解](https://blog.csdn.net/hguisu/article/details/7445768/)&emsp;From hguisu's blog on CSDN
 ## References
 [信息安全技术解析与开发实践](https://baike.baidu.com/item/信息安全技术解析与开发实践/5613826?fr=aladdin)
 <br/>訾小超 薛质 姚立红 蒋兴浩 潘理编著&emsp;李建华主审&emsp;清华大学出版社.2011

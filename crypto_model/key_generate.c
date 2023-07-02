@@ -8,7 +8,7 @@ struct key
   unsigned char *data;
   int length;
 };
-// 返回一个Key类型的函数2
+// 返回一个Key类型的函数
 struct key convert_file(char *filename)
 {
   unsigned char c;

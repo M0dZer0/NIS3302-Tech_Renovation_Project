@@ -32,7 +32,7 @@ static int read_file(const char *filename, int flag)
         printk(KERN_ALERT "Failed to open file\n");
         return -1;
     }
-    // 切换到内核空间的地址空间
+    // 切换到内核空间的地址空间2
     oldfs = get_fs();
     set_fs(KERNEL_DS);
     if (flag == 0)

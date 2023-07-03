@@ -10,16 +10,6 @@
 
 #define BUFFER_SIZE 1024
 
-// 将字符串按照十六进制输出
-void hex_print(struct key str)
-{
-    for (int i = 0; i < str.length; i++)
-    {
-        printf("%02x", str.data[i]);
-    }
-    printf("\n");
-}
-
 int clientSocket;
 pthread_t receiveThread, sendThread;
 

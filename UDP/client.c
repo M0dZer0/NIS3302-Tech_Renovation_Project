@@ -10,9 +10,11 @@
 #include <arpa/inet.h>
 #include <sys/select.h>
 #include <pthread.h>
+#include "key_generate.h"
+#include <unistd.h>
 
+#define BUFFER_SIZE 1024
 #define MAXLINE 4096
-
 struct sockaddr_in servaddr;
 fd_set rset;
 int serverSocket, n, rec_len;
@@ -87,7 +89,87 @@ int main(int argc, char **argv)
         exit(0);
     }
     printf("Connected to server\n");
-    
+
+    // 判断public_key.der和private_key.der是否存在，若不存在则生成密钥，并存入文件
+    if (access("public_key.der", F_OK) == -1 || access("private_key.der", F_OK) == -1)
+    {
+        setKey();
+        struct key pub_key = convert_file("public_key.der");
+        struct key pri_key = convert_file("private_key.der");
+
+        printf("generate key successfully!\n");
+        hex_print(pub_key);
+        printf("the length of pub_key: %d\n", pub_key.length);
+        hex_print(pri_key);
+        printf("the length of pri_key: %d\n", pri_key.length);
+
+        // 保存key到文件中
+        save_key_to_file("pub_key_file", pub_key);
+        save_key_to_file("pri_key_file", pri_key);
+
+        /*
+                // 将公钥长度和公钥内容发送给服务器
+                char pub_key_length[4];
+                sprintf(pub_key_length, "%d", pub_key.length);
+                //将公钥长度放在公钥内容前
+                char *pub_key_data;
+                memcpy(pub_key_data, pub_key_length, 4);
+                memcpy(pub_key_data + 4, pub_key.data, pub_key.length);
+                ssize_t bytesSent = send(serverSocket, pub_key_data, pub_key.length + 4, 0);
+                if (bytesSent <= 0)
+                {
+                    perror("Error while sending public key to server");
+                }
+
+                // 接收服务器的公钥
+                char buffer[BUFFER_SIZE];
+                memset(buffer, 0, BUFFER_SIZE);
+                ssize_t bytesRead = recv(serverSocket, buffer, BUFFER_SIZE, 0);
+                if (bytesRead <= 0)
+                {
+                    perror("Error while receiving public key from server");
+                }
+
+                //读取公钥长度信息
+                struct key server_pub_key;
+                char server_pub_key_length[4];
+                memcpy(server_pub_key_length, buffer, 4);
+                //将公钥长度转换为int类型
+                int server_pub_key_length_int = atoi(server_pub_key_length);
+                server_pub_key.length = server_pub_key_length_int;
+                //读取公钥内容
+                memcpy(server_pub_key.data, buffer + 4, server_pub_key_length_int);
+                //将公钥内容保存到文件中
+                save_key_to_file("server_pub_key_file", server_pub_key);
+        */
+        // 将公钥发送给服务器
+        ssize_t bytesSent = sendto(serverSocket, pub_key.data, pub_key.length, 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
+        if (bytesSent <= 0)
+        {
+            perror("Error while sending public key to server");
+        }
+
+        // 接收服务器的公钥
+        char buffer[BUFFER_SIZE];
+        memset(buffer, 0, BUFFER_SIZE);
+        ssize_t bytesRead = recvfrom(serverSocket, buffer, BUFFER_SIZE, 0, NULL, NULL);
+        if (bytesRead <= 0)
+        {
+            perror("Error while receiving public key from server");
+        }
+
+        // 将公钥内容保存到文件中
+        struct key server_pub_key;
+        server_pub_key.length = bytesRead;
+        server_pub_key.data = malloc(bytesRead);
+        memcpy(server_pub_key.data, buffer, bytesRead);
+        save_key_to_file("server_pub_key_file", server_pub_key);
+
+        hex_print(server_pub_key);
+        // 清空命令行显示
+        printf("\r\033[K");
+    }
+
     // 创建接收和发送消息的线程
     if (pthread_create(&receiveThread, NULL, receiveMessage, NULL) != 0)
     {

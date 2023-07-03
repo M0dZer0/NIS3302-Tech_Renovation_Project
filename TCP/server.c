@@ -11,25 +11,13 @@
 #define BUFFER_SIZE 1024
 
 // 将字符串按照十六进制输出
-void hex_print(char *str)
+void hex_print(struct key str)
 {
-    int i;
-    char *ptr = str;
-    i = 1;
-    printf("\"");
-
-    while (*ptr != '\0')
+    for (int i = 0; i < str.length; i++)
     {
-        printf("\\x%.2s", ptr);
-        ptr += 2;
-        if (i % 16 == 0)
-        {
-            printf("\"\n\"");
-        }
-        i++;
+        printf("%02x", str.data[i]);
     }
-    if (i % 16 != 0)
-        printf("\"\n");
+    printf("\n");
 }
 
 int clientSocket;
@@ -146,14 +134,46 @@ int main()
         struct key pri_key = convert_file("private_key.der");
 
         printf("generate key successfully!\n");
-        printf("pub_key: %s\n", pub_key.data);
-        printf("the length of pub_key: %d\n", pub_key.length);
-        printf("pri_key: %s\n", pri_key.data);
-        printf("the length of pri_key: %d\n", pri_key.length);
 
         // 保存key到文件中
         save_key_to_file("pub_key_file", pub_key);
         save_key_to_file("pri_key_file", pri_key);
+
+        /*
+                // 将公钥长度和公钥内容发送给客户端
+                char pub_key_length[4];
+                sprintf(pub_key_length, "%d", pub_key.length);
+                //将公钥长度放在公钥内容前
+                char *pub_key_data;
+                memcpy(pub_key_data, pub_key_length, 4);
+                memcpy(pub_key_data + 4, pub_key.data, pub_key.length);
+                ssize_t bytesSent = send(clientSocket, pub_key_data, pub_key.length + 4, 0);
+                if (bytesSent <= 0)
+                {
+                    perror("Error while sending public key to client");
+                }
+
+                // 接收客户端的公钥
+                char buffer[BUFFER_SIZE];
+                memset(buffer, 0, BUFFER_SIZE);
+                ssize_t bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+                if (bytesRead <= 0)
+                {
+                    perror("Error while receiving public key from client");
+                }
+
+                //读取公钥长度信息
+                struct key client_pub_key;
+                char client_pub_key_length[4];
+                memcpy(client_pub_key_length, buffer, 4);
+                //将公钥长度转换为int类型
+                int client_pub_key_length_int = atoi(client_pub_key_length);
+                client_pub_key.length = client_pub_key_length_int;
+                //读取公钥内容
+                memcpy(client_pub_key.data, buffer + 4, client_pub_key_length_int);
+                //将公钥内容保存到文件中
+                save_key_to_file("client_pub_key_file", client_pub_key);
+        */
 
         // 将公钥发送给客户端
         ssize_t bytesSent = send(clientSocket, pub_key.data, pub_key.length, 0);
@@ -171,14 +191,12 @@ int main()
             perror("Error while receiving public key from client");
         }
 
-        // 将客户端的公钥保存到文件中
+        // 将公钥内容保存到文件中
         struct key client_pub_key;
-        client_pub_key.data = buffer;
-        client_pub_key.length = strlen(buffer);
+        client_pub_key.length = bytesRead;
+        client_pub_key.data = malloc(bytesRead); // 分配足够的内存空间
+        memcpy(client_pub_key.data, buffer, bytesRead);
         save_key_to_file("client_pub_key_file", client_pub_key);
-
-        hex_print(client_pub_key.data);
-
         // 清空命令行显示
         printf("\r\033[K");
     }

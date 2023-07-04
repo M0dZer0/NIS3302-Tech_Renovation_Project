@@ -54,58 +54,40 @@ int fp_check(FILE *fp)
 }
 
 int setKey()
-
 {
-
   FILE *fp;
-
   char path[1035];
 
-  /* 执行openssl命令 */
-
+  // 执行openssl命令
   fp = popen("openssl genpkey -algorithm RSA -out private_key.der -outform DER -pkeyopt rsa_keygen_bits:1024", "r"); // popen()函数执行shell命令
-
   if (!fp_check(fp))
-
   {
-
     return 0;
   }
-
   pclose(fp);
 
-  fp = popen("openssl asn1parse -in public_key.der -inform DER", "r");
-
+  fp = popen("openssl asn1parse  -in private_key.der -inform DER", "r");
   if (!fp_check(fp))
-
   {
-
     return 0;
   }
-
   pclose(fp);
 
   fp = popen("openssl rsa -pubout -in private_key.der -out public_key.der -inform DER -outform DER -RSAPublicKey_out", "r");
-
   if (!fp_check(fp))
-
   {
-
     return 0;
   }
-
   pclose(fp);
 
-  fp = popen("openssl asn1parse  -in public_key.der -inform DER", "r");
-
+  fp = popen("openssl asn1parse -in public_key.der -inform DER", "r");
   if (!fp_check(fp))
-
   {
-
     return 0;
   }
-
   pclose(fp);
+
+  return 1;
 }
 void save_key_to_file(char *filename, struct key key_data)
 {

@@ -98,10 +98,13 @@ int main(int argc, char **argv)
         struct key pri_key = convert_file("private_key.der");
 
         printf("generate key successfully!\n");
+
+        /*
         hex_print(pub_key);
         printf("the length of pub_key: %d\n", pub_key.length);
         hex_print(pri_key);
         printf("the length of pri_key: %d\n", pri_key.length);
+        */
 
         // 保存key到文件中
         save_key_to_file("pub_key_file", pub_key);

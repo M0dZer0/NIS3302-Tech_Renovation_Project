@@ -10,10 +10,17 @@
 
 #define BUFFER_SIZE 1024
 
-
 int serverSocket;
 pthread_t receiveThread, sendThread;
-
+// 退出时清除产生的文件
+void clear()
+{
+    remove("public_key.der");
+    remove("private_key.der");
+    remove("pub_key_file");
+    remove("pri_key_file");
+    remove("server_pub_key_file");
+}
 // 接收消息的线程
 void *receiveMessage(void *arg)
 {
@@ -195,6 +202,7 @@ int main(int argc, char **argv)
 
     // 关闭套接字
     close(serverSocket);
+    clear();
 
     return 0;
 }

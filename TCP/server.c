@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include <stdbool.h>
 #include "key_generate.h"
 
 #define BUFFER_SIZE 1024
@@ -13,6 +14,14 @@
 int clientSocket;
 pthread_t receiveThread, sendThread;
 
+void clear()
+{
+    remove("public_key.der");
+    remove("private_key.der");
+    remove("pub_key_file");
+    remove("pri_key_file");
+    remove("client_pub_key_file");
+}
 void print_key(struct key key)
 {
 }
@@ -61,11 +70,35 @@ void *sendMessage(void *arg)
         printf("Enter your message to client: ");
 
         fgets(buffer, BUFFER_SIZE, stdin);
-        ssize_t bytesSent = send(clientSocket, buffer, strlen(buffer), 0);
-        if (bytesSent <= 0)
+        // 检测回车内容
+        if (strcmp(buffer, "\n") == 0)
         {
-            perror("Error while sending message");
-            break;
+            // 询问用户是否退出程序
+            printf("Do you want to exit the program? (y/n): ");
+            fflush(stdout);
+            char answer[BUFFER_SIZE];
+            fgets(answer, BUFFER_SIZE, stdin);
+
+            if (strcmp(answer, "y\n") == 0 || strcmp(answer, "Y\n") == 0)
+            {
+                // 发送退出消息给客户端
+                ssize_t bytesSent = send(clientSocket, "exit", strlen("exit"), 0);
+                if (bytesSent <= 0)
+                {
+                    perror("Error while sending exit message");
+                }
+
+                break; // 退出发送消息的循环
+            }
+        }
+        else
+        {
+            ssize_t bytesSent = send(clientSocket, buffer, strlen(buffer), 0);
+            if (bytesSent <= 0)
+            {
+                perror("Error while sending message");
+                break;
+            }
         }
     }
 
@@ -190,7 +223,6 @@ int main()
         // 清空命令行显示
         printf("\r\033[K");
     }
-
     // 创建接收和发送消息的线程
     if (pthread_create(&receiveThread, NULL, receiveMessage, NULL) != 0)
     {
@@ -211,6 +243,7 @@ int main()
     // 关闭套接字
     close(clientSocket);
     close(serverSocket);
+    clear();
 
     return 0;
 }

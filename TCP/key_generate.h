@@ -15,7 +15,6 @@ struct key convert_file(char *filename)
   int i;
   unsigned char *str = NULL;
   size_t str_size = 0;
-
   i = 0;
   file = fopen(filename, "rb");
   while (fread(&c, 1, 1, file))
@@ -60,6 +59,8 @@ int setKey()
 
   // 执行openssl命令
   fp = popen("openssl genpkey -algorithm RSA -out private_key.der -outform DER -pkeyopt rsa_keygen_bits:1024", "r"); // popen()函数执行shell命令
+  printf("\033[A");
+  printf("\r\033[K");
   if (!fp_check(fp))
   {
     return 0;
@@ -67,6 +68,8 @@ int setKey()
   pclose(fp);
 
   fp = popen("openssl asn1parse  -in private_key.der -inform DER", "r");
+  printf("\033[A");
+  printf("\r\033[K");
   if (!fp_check(fp))
   {
     return 0;
@@ -74,6 +77,8 @@ int setKey()
   pclose(fp);
 
   fp = popen("openssl rsa -pubout -in private_key.der -out public_key.der -inform DER -outform DER -RSAPublicKey_out", "r");
+  printf("\033[A");
+  printf("\r\033[K");
   if (!fp_check(fp))
   {
     return 0;
@@ -81,6 +86,8 @@ int setKey()
   pclose(fp);
 
   fp = popen("openssl asn1parse -in public_key.der -inform DER", "r");
+  printf("\033[A");
+  printf("\r\033[K");
   if (!fp_check(fp))
   {
     return 0;

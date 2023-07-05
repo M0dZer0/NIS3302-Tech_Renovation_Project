@@ -38,8 +38,11 @@ void *receiveMessage(void *arg)
 
         if (strcmp(buffer, "exit") == 0)
         {
+            printf("\r\033[K");
             printf("Server requested to exit.\n");
             close(serverSocket);
+            clear();
+            exit(0);
         }
 
         // 清除本行并打印接收到的消息
@@ -65,11 +68,35 @@ void *sendMessage(void *arg)
     {
         printf("Enter your message to server: ");
         fgets(buffer, BUFFER_SIZE, stdin);
-        ssize_t bytesSent = send(serverSocket, buffer, strlen(buffer), 0);
-        if (bytesSent <= 0)
+        // 检测回车内容
+        if (strcmp(buffer, "\n") == 0)
         {
-            perror("Error while sending message");
-            break;
+            // 询问用户是否退出程序
+            printf("Do you want to exit the program? (y/n): ");
+            fflush(stdout);
+            char answer[BUFFER_SIZE];
+            fgets(answer, BUFFER_SIZE, stdin);
+
+            if (strcmp(answer, "y\n") == 0 || strcmp(answer, "Y\n") == 0)
+            {
+                // 发送退出消息给客户端
+                ssize_t bytesSent = send(serverSocket, "exit", strlen("exit"), 0);
+                if (bytesSent <= 0)
+                {
+                    perror("Error while sending exit message");
+                }
+
+                break; // 退出发送消息的循环
+            }
+        }
+        else
+        {
+            ssize_t bytesSent = send(serverSocket, buffer, strlen(buffer), 0);
+            if (bytesSent <= 0)
+            {
+                perror("Error while sending message");
+                break;
+            }
         }
     }
 
@@ -203,6 +230,8 @@ int main(int argc, char **argv)
     // 关闭套接字
     close(serverSocket);
     clear();
+    printf("\033[A");
+    printf("\r\033[K");
 
     return 0;
 }

@@ -42,9 +42,13 @@ void *receiveMessage(void *arg)
 
         if (strcmp(buffer, "exit") == 0)
         {
+            printf("\r\033[K");
             printf("Client requested to exit.\n");
             close(clientSocket);
+            clear();
+            exit(0);
         }
+
 
         // 清除本行并打印接收到的消息
         printf("\r\033[KReceived message from client: %s\n", buffer);
@@ -244,6 +248,8 @@ int main()
     close(clientSocket);
     close(serverSocket);
     clear();
+    printf("\033[A");
+    printf("\r\033[K");
 
     return 0;
 }

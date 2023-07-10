@@ -20,6 +20,16 @@ struct sockaddr_in servaddr,
     cliaddr;
 int serverSocket;
 pthread_t receiveThread, sendThread;
+
+void clear()
+{
+    remove("public_key.der");
+    remove("private_key.der");
+    remove("pub_key_file");
+    remove("pri_key_file");
+    remove("server_pub_key_file");
+}
+
 void *receiveMessage(void *arg)
 {
     int n;
@@ -35,6 +45,16 @@ void *receiveMessage(void *arg)
             perror("Error while receiving message");
             break;
         }
+
+        if (strcmp(buffer, "exit") == 0)
+        {
+            printf("\r\033[K");
+            printf("Client requested to exit.\n");
+            close(serverSocket);
+            clear();
+            exit(0);
+        }
+
         printf("\r\033[KReceived message from client: %s\n", buffer);
         printf("\033[A");
         printf("Enter your message to client: ");
@@ -52,11 +72,35 @@ void *sendMessage(void *arg)
     {
         printf("Enter your message to client: ");
         fgets(buffer, MAXLINE, stdin);
-        // Send data back to the client using sendto() function
-        if (sendto(serverSocket, buffer, strlen(buffer), 0, (struct sockaddr *)&cliaddr, len) == -1)
+        // 检测回车内容
+        if (strcmp(buffer, "\n") == 0)
         {
-            printf("sendto error: %s(errno: %d)\n", strerror(errno), errno);
-            exit(0);
+            // 询问用户是否退出程序
+            printf("Do you want to exit the program? (y/n): ");
+            fflush(stdout);
+            char answer[BUFFER_SIZE];
+            fgets(answer, BUFFER_SIZE, stdin);
+
+            if (strcmp(answer, "y\n") == 0 || strcmp(answer, "Y\n") == 0)
+            {
+                // 发送退出消息给客户端
+                ssize_t bytesSent = sendto(serverSocket, "exit", strlen("exit"), 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr));
+                if (bytesSent <= 0)
+                {
+                    perror("Error while sending exit message");
+                }
+
+                exit(0); // 退出发送消息的循环
+            }
+        }
+        else
+        {
+            ssize_t bytesSent = sendto(serverSocket, buffer, strlen(buffer), 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr));
+            if (bytesSent <= 0)
+            {
+                printf("send msg error: %s(errno: %d)\n", strerror(errno), errno);
+                exit(0);
+            }
         }
     }
     pthread_exit(NULL);
@@ -190,5 +234,9 @@ int main(int argc, char **argv)
     pthread_join(sendThread, NULL);
 
     close(serverSocket);
+    clear();
+    printf("\033[A");
+    printf("\r\033[K");
+
     return 0;
 }

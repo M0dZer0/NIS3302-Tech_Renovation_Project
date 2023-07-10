@@ -20,6 +20,15 @@ fd_set rset;
 int serverSocket, n, rec_len;
 pthread_t receiveThread, sendThread;
 
+void clear()
+{
+    remove("public_key.der");
+    remove("private_key.der");
+    remove("pub_key_file");
+    remove("pri_key_file");
+    remove("server_pub_key_file");
+}
+
 void *receiveMessage(void *arg)
 {
     char buffer[MAXLINE];
@@ -32,6 +41,16 @@ void *receiveMessage(void *arg)
             exit(1);
         }
         buffer[rec_len] = '\0';
+
+        if (strcmp(buffer, "exit") == 0)
+        {
+            printf("\r\033[K");
+            printf("Server requested to exit.\n");
+            close(serverSocket);
+            clear();
+            exit(0);
+        }
+
         // 清除本行并打印接收到的消息
         printf("\r\033[KReceived message from server: %s\n", buffer);
 
@@ -51,10 +70,35 @@ void *sendMessage(void *arg)
     {
         printf("Enter your message to server: ");
         fgets(buffer, MAXLINE, stdin);
-        if (sendto(serverSocket, buffer, strlen(buffer), 0, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+        // 检测回车内容
+        if (strcmp(buffer, "\n") == 0)
         {
-            printf("send msg error: %s(errno: %d)\n", strerror(errno), errno);
-            exit(0);
+            // 询问用户是否退出程序
+            printf("Do you want to exit the program? (y/n): ");
+            fflush(stdout);
+            char answer[BUFFER_SIZE];
+            fgets(answer, BUFFER_SIZE, stdin);
+
+            if (strcmp(answer, "y\n") == 0 || strcmp(answer, "Y\n") == 0)
+            {
+                // 发送退出消息给客户端
+                ssize_t bytesSent = sendto(serverSocket, "exit", strlen("exit"), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
+                if (bytesSent <= 0)
+                {
+                    perror("Error while sending exit message");
+                }
+
+                exit(0); // 退出发送消息的循环
+            }
+        }
+        else
+        {
+            ssize_t bytesSent = sendto(serverSocket, buffer, strlen(buffer), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
+            if (bytesSent <= 0)
+            {
+                printf("send msg error: %s(errno: %d)\n", strerror(errno), errno);
+                exit(0);
+            }
         }
     }
     pthread_exit(NULL);
@@ -190,5 +234,8 @@ int main(int argc, char **argv)
     pthread_join(receiveThread, NULL);
     pthread_join(sendThread, NULL);
     close(serverSocket);
+    clear();
+    printf("\033[A");
+    printf("\r\033[K");
     return 0;
 }

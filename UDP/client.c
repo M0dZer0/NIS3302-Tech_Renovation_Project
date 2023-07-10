@@ -87,7 +87,7 @@ void *sendMessage(void *arg)
                 {
                     perror("Error while sending exit message");
                 }
-
+                clear();
                 exit(0); // 退出发送消息的循环
             }
         }

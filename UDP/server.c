@@ -27,7 +27,7 @@ void clear()
     remove("private_key.der");
     remove("pub_key_file");
     remove("pri_key_file");
-    remove("server_pub_key_file");
+    remove("client_pub_key_file");
 }
 
 void *receiveMessage(void *arg)
@@ -89,7 +89,7 @@ void *sendMessage(void *arg)
                 {
                     perror("Error while sending exit message");
                 }
-
+                clear();
                 exit(0); // 退出发送消息的循环
             }
         }

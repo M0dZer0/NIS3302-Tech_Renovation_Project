@@ -1,16 +1,25 @@
 #!/bin/bash
 
-#rm ./TCP/pri_key_file
-#rm ./TCP/pub_key_file
-#rm ./TCP/private_key.der
-#rm ./TCP/public_key.der
-#rm ./TCP/server_pub_key_file
+rm -f ./TCP/pri_key_file
+rm -f ./TCP/pub_key_file
+rm -f ./TCP/private_key.der
+rm -f ./TCP/public_key.der
+rm -f ./TCP/server_pub_key_file
+rm -f ./TCP/client_pub_key_file
 
-#rm ./UDP/pri_key_file
-#rm ./UDP/pub_key_file
-#rm ./UDP/private_key.der
-#rm ./UDP/public_key.der
-#rm ./UDP/server_pub_key_file
+rm -f ./UDP/pri_key_file
+rm -f ./UDP/pub_key_file
+rm -f ./UDP/private_key.der
+rm -f ./UDP/public_key.der
+rm -f ./UDP/server_pub_key_file
+rm -f ./UDP/client_pub_key_file
+
+rm -f ./pri_key_file
+rm -f ./pub_key_file
+rm -f ./private_key.der
+rm -f ./public_key.der
+rm -f ./server_pub_key_file
+rm -f ./client_pub_key_file
 # 检查参数数量
 if [ $# -ne 4 ]; then
   echo "参数数量不正确！"

@@ -203,6 +203,7 @@ static int encrypt_data(struct sk_buff *skb, unsigned int protocol)
             unsigned int tcphdr_len = tcphdr->doff * 4;
             payload = (unsigned char *)tcphdr + tcphdr_len;
             payload_len = skb->len - skb_transport_offset(skb) - tcphdr_len;
+            printk("tcphdr->doff: %d\n", tcphdr->doff);
             printk("tcphdr->psh: %d\n", tcphdr->psh);
 
             if(!strncmp(str, payload, payload_len))       
@@ -224,7 +225,6 @@ static int encrypt_data(struct sk_buff *skb, unsigned int protocol)
         default:
             return err;
     }
-    printk("tcphdr->doff: %d\n", tcphdr->doff);
     // 创建缓冲区，存储输入和输出数据
     void *inbuf = NULL;
     inbuf = kzalloc(payload_len, GFP_KERNEL);
@@ -440,8 +440,6 @@ static int decrypt_data(struct sk_buff *skb, unsigned int protocol)
     unsigned char *payload = NULL;      // 指向有效载荷数据的起始位置
     unsigned int payload_len = 0;       // 记录有效载荷数据的长度
     unsigned char *str = (unsigned char *)"exit";           //退出信息
-    tcphdr = tcp_hdr(skb);
-    printk("tcphdr->doff: %d\n", tcphdr->doff);
     int err = -ENOMEM;
     // 获取数据指针和长度
     switch(protocol) {
@@ -454,6 +452,7 @@ static int decrypt_data(struct sk_buff *skb, unsigned int protocol)
             unsigned int tcphdr_len = tcphdr->doff * 4;
             payload = (unsigned char *)tcphdr + tcphdr_len;
             payload_len = skb->len - skb_transport_offset(skb) - tcphdr_len;
+            printk("tcphdr->doff: %d\n", tcphdr->doff);
             printk("tcphdr->psh: %d\n", tcphdr->psh);
 
             if(!strncmp(str, payload, payload_len))

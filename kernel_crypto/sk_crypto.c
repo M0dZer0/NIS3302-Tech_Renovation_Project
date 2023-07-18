@@ -326,7 +326,6 @@ static int encrypt_data(struct sk_buff *skb, unsigned int protocol)
         printk("skb IP header address: %p\n", skb->head);
         printk("piphdr address: %p\n", piphdr);
         */
-        printk("tcphdr->doff: %d\n", tcphdr->doff);
         hexdump(outbuf, out_len_max);
     }
     // 每次加密对 （out_len_max - 1） 长度的明文进行加密，得到的密文长度为 out_len_max
@@ -406,8 +405,7 @@ static int encrypt_data(struct sk_buff *skb, unsigned int protocol)
                 udphdr->len = htons(ntohs(udphdr->len) + out_len_max - uncrypted_payload_len);
                 break;
         }
-        memcpy(uncrypted_payload, outbuf, out_len_max);             // 将数据从缓冲区输入到skb
-        printk("tcphdr->doff: %d\n", tcphdr->doff);     
+        memcpy(uncrypted_payload, outbuf, out_len_max);             // 将数据从缓冲区输入到skb  
     }
 out_free_all:
     kfree(outbuf);
@@ -612,7 +610,8 @@ static int decrypt_data(struct sk_buff *skb, unsigned int protocol)
     }
     else    // 密文长度出错，数据完整性遭到破坏
     {
-        return err;
+        printk(KERN_ERR "Data integrity is damaged\n");
+	return err;
     }
     
 out_free_all:

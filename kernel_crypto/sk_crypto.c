@@ -507,7 +507,7 @@ static int decrypt_data(struct sk_buff *skb, unsigned int protocol)
     err = -ENOMEM;
     
     out_len_max = crypto_akcipher_maxsize(tfm);             //全局变量，可密文最大长度
-    if(payload_len = out_len_max)
+    if(payload_len == out_len_max)
     {
         outbuf = kzalloc(out_len_max, GFP_KERNEL);
         if (!outbuf)

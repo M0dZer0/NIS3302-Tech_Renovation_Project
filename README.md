@@ -22,7 +22,7 @@ The required operating environment for this system is as follows:
 To run our system, you may need to execute the shell communication script we have written for key distribution. The command to run is as follows:
 
 ```shell
-sh ./socket.sh <server/client> <TCP/UDP> <目标IP> <端口号 >
+sh ./socket.sh <server/client> <TCP/UDP> <目标IP> <端口号>
 ```
 
 Please make sure you have the necessary permissions and dependencies in place before running the script.

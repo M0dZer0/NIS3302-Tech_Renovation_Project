@@ -4,8 +4,50 @@
   <p align="center">
       
 ## Introduction
-
+In conventional TCP/UDP communication, IP datagrams are transmitted in plaintext over the network, which poses significant security risks. Attackers can easily intercept the transmitted content using tools like Wireshark. To address this issue, our team has designed a network packet encryption and transmission system that runs in the Linux kernel space. It encrypts the data using a hook function registered on the netfilter framework's hook point and delivers the ciphertext to the recipient. We employ asymmetric RSA encryption method and exchange public keys during the communication establishment to ensure the security of the key and prevent attackers from decrypting the ciphertext.
 ## Preview
+### Operating Environment
+The required operating environment for this system is as follows:
++ Operating System: Linux distribution such as Ubuntu, Debian, CentOS, etc.
++ Kernel Version: Linux kernel version 2.6.14 or above.
++ Software Dependencies: The system requires the installation of libpcap and libnetfilter_queue.
++ Hardware Requirements: At least one network interface card (NIC) is needed.
++ System Privileges: The system should be run with root user privileges.
+### Overall Design
+![overall design](https://github.com/SJTUzeroking/NIS3302-Tech_Renovation_Project/blob/main/png/1.png)
+
+![crypto module](https://github.com/SJTUzeroking/NIS3302-Tech_Renovation_Project/blob/main/png/2.png)
+
+### How to use
+To run our system, you may need to execute the shell communication script we have written for key distribution. The command to run is as follows:
+
+```shell
+sh ./socket.sh <server/client> <TCP/UDP> <目标IP> <端口号 >
+```
+
+Please make sure you have the necessary permissions and dependencies in place before running the script.
+Afterward, you need to insert the compiled encryption and decryption module into the system kernel and provide the required configuration rules. Here are the steps to follow:
+
+1. Insert the module into the kernel:
+
+```shell
+insmod encryption_module.ko
+```
+
+Replace `encryption_module.ko` with the actual name of your compiled module.
+
+2. Configure the necessary rules:
+
+```shell
+./configure -p tcp/udp -x src_addr -y des_addr/-m srcport -n desport
+```
+
+Please note that inserting a module into the kernel and configuring system rules require root privileges. Make sure you have the necessary permissions before executing these commands.
+
+Please ensure that the parameters entered are correct, and then you can communicate to test the encryption effect.
+For more details,you can refer to the source code or our **system test** folder introduced in Chinese.
+
+
 
 **Our Team**
 <br/>[@ChubbyChenJK](https://github.com/ChubbyChenJK)
